@@ -155,7 +155,7 @@ export default function Todos({ user }) {
         <div style={{ maxWidth: 520, margin: "40px auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h2>Мій Todo</h2>
-                <button onClick={signOut}>Выйти</button>
+                <button onClick={signOut}>Вийти</button>
      
                 
                 <button // кнопка видалення акаунту
@@ -170,12 +170,12 @@ export default function Todos({ user }) {
 
             <form onSubmit={addTodo} style={{ display: "flex", gap: 8 }}>
                 <input
-                    placeholder="Новая задача..."
+                    placeholder="Нова задача..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     style={{ flex: 1 }}
                 />
-                <button type="submit">Добавити</button>
+                <button type="submit">Додати</button>
             </form>
 
 
@@ -185,7 +185,7 @@ export default function Todos({ user }) {
 
                 <textarea
                     rows={4}
-                    placeholder="Опищіть що вам треба зробити, вони будуть розбиті на менші та перетворені в задачі...'"
+                    placeholder="Опищіть що вам треба зробити, текст буде розбитий на прості задачі...'"
                     value={aiText}
                     onChange={(e) => setAiText(e.target.value)}
                     style={{ width: "100%", resize: "vertical" }}
