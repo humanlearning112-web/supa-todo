@@ -12,7 +12,7 @@ export default function Auth() {
             password,
         });
         if (error) alert(error.message);
-        else alert("Готово! Проверь почту (если включено подтверждение).");
+        else alert("Готово! перевірте на пошту надійшо посилання для підтвердження.");
     };
 
     const signIn = async () => {
@@ -28,7 +28,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "github",
             options: {
-                // отправим пользователя обратно на текущий origin (localhost:5173 или 5176)
+                // 
                 redirectTo: window.location.origin,
             },
         });
@@ -37,10 +37,10 @@ export default function Auth() {
 
     return (
         <div style={{ maxWidth: 360, margin: "40px auto", display: "grid", gap: 12 }}>
-            <h2>Вход / Регистрация</h2>
+            <h2>Вхід / регістрація</h2>
 
             <button onClick={signInWithGitHub}>
-                Войти через GitHub
+                 Авторизація GitHub 
             </button>
 
             <hr />
@@ -58,8 +58,8 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
             />
 
-            <button onClick={signIn}>Войти</button>
-            <button onClick={signUp}>Зарегистрироваться</button>
+            <button onClick={signIn}>Увійти</button>
+            <button onClick={signUp}>Створити акаунт</button>
         </div>
     );
 }

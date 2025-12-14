@@ -1,3 +1,14 @@
+# Опис проєкту 
+
+Про цей проєкт 
+supabase + react + google AI studio + vercle
+
+функції:
+login за поштою аба авторизація через GitHub
+створення ToDo затач іх позначення як виконаних та видалення
+Можливість наприсати декілька речень які автоматично розібьються на задачі( реалізована на supabase-EdgeFunction + google-AIs-tudio)
+Можливість видалити акаунт юзером (реалізовано через supabase-EdgeFunction)
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

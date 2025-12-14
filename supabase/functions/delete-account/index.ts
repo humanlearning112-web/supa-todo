@@ -3,7 +3,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-// CORS (как у тебя уже было для ai-todos)
+
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Use POST" }, 405);
     }
 
-    // 2) Проверяем Authorization
+    //  Перевірка Authorization
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
         return jsonResponse({ error: "Missing Authorization header" }, 401);
@@ -40,8 +40,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Missing Bearer token" }, 401);
     }
 
-    // 3) Клиент "как пользователь" (anon key + auth context), чтобы получить user по JWT
-    // Supabase рекомендует прокидывать Authorization header в createClient внутри handler. [6](https://supabase.com/docs/guides/functions/auth)
+    // 3) (anon key + auth context), отримати user по JWTSupabase рекомендує Authorization header в createClient всередині handler. [6](https://supabase.com/docs/guides/functions/auth)
     const supabaseUser = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -57,8 +56,7 @@ Deno.serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // 4) Админ-клиент (service role) — ТОЛЬКО на сервере/edge function!
-    // SUPABASE_SERVICE_ROLE_KEY доступен как secret в Edge Functions, и не должен быть в браузере. [3](https://supabase.com/docs/guides/functions/secrets)[2](https://supabase.com/docs/reference/javascript/admin-api)
+    // 4) Админ-клієнт (service role)  Едж функція (https://supabase.com/docs/guides/functions/secrets)[2](https://supabase.com/docs/reference/javascript/admin-api)
     const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -67,9 +65,9 @@ Deno.serve(async (req) => {
         }
     );
 
-    // 5) Удаляем пользователя
-    // deleteUser требует service_role key и user id из auth.users.id. [1](https://supabase.com/docs/reference/javascript/auth-admin-deleteuser)
-    // Можно также сделать "soft delete" вторым аргументом (true). [1](https://supabase.com/docs/reference/javascript/auth-admin-deleteuser)
+    // видалення
+    // deleteUser ,service_role key і user id отримати з  auth.users.id. [1](https://supabase.com/docs/reference/javascript/auth-admin-deleteuser)
+    //"soft delete"(https://supabase.com/docs/reference/javascript/auth-admin-deleteuser)
     const { data, error } = await supabaseAdmin.auth.admin.deleteUser(userId /*, false */);
 
     if (error) {

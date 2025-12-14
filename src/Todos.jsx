@@ -29,16 +29,16 @@ export default function Todos({ user }) {
 
             const { data, error } = await supabase.functions.invoke("ai-todos", {
                 body: { text: aiText },
-            }); // invoke автоматически сериализует JSON и обрабатывает ответ [2](https://supabase.com/docs/reference/javascript/functions-invoke)
+            }); // invoke JSON(https://supabase.com/docs/reference/javascript/functions-invoke)
 
             if (error) throw error;
 
             const tasks = data?.tasks ?? [];
-            setAiPreview(data); // сохраним raw_json и tasks для "скачать json"
+            setAiPreview(data); // save raw_json  tasks для "download json"
 
             if (!tasks.length) return;
 
-            // превратим в строки для вставки
+            // перетворюємо в рядки
             const rows = tasks.map((t) => ({
                 title: t.title,
                 is_done: false,
@@ -56,13 +56,13 @@ export default function Todos({ user }) {
             if (e instanceof FunctionsHttpError) {
                 const errBody = await e.context.json().catch(() => ({}));
                 console.error("HTTP error body:", errBody);
-                alert("Edge Function вернула HTTP ошибку. Смотри console.");
+                alert("Edge Function повернула HTTP помилку.");
             } else if (e instanceof FunctionsRelayError) {
                 console.error("Relay error:", e.message);
-                alert("Relay error (проблема на стороне Supabase gateway). Смотри console.");
+                alert("Relay error (промлема з Supabase gateway).");
             } else if (e instanceof FunctionsFetchError) {
                 console.error("Fetch error:", e.message);
-                alert("Fetch error: запрос не ушёл (URL/CORS/сеть/ENV). Смотри console.");
+                alert("Fetch error: запрос не пішов (URL/CORS/сеть/ENV).");
             } else {
                 alert(e?.message ?? String(e));
             }
@@ -74,21 +74,21 @@ export default function Todos({ user }) {
 
 
     const deleteAccount = async () => {
-        const ok = confirm("Точно удалить аккаунт? Это действие необратимо. Все ваши задачи будут удалены.");
+        const ok = confirm("Впевнені що бажаєти видалити акаунт ? Всі записи буде втрачено");
         if (!ok) return;
 
         try {
             const { data, error } = await supabase.functions.invoke("delete-account", {
-                body: {}, // ничего не нужно, user берется из JWT
+                body: {}, 
             });
 
             if (error) throw error;
 
-            // на всякий случай
+            // на всякий, для підстраховки вийдемо 
             await supabase.auth.signOut();
 
-            alert("Аккаунт удалён.");
-            // можно обновить страницу
+            alert("Аккаунт видалено.");
+            // оновлення сторінки після видалення акаунту і виходу
             window.location.reload();
         } catch (e) {
             console.error(e);
@@ -154,7 +154,7 @@ export default function Todos({ user }) {
     return (
         <div style={{ maxWidth: 520, margin: "40px auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2>Мой Todo</h2>
+                <h2>Мій Todo</h2>
                 <button onClick={signOut}>Выйти</button>
      
                 
@@ -162,7 +162,7 @@ export default function Todos({ user }) {
                     onClick={deleteAccount}
                     style={{ background: "#ff4d4f", color: "white", border: 0, padding: "6px 10px", borderRadius: 6 }}
                 >
-                    Удалить аккаунт
+                    Видалити аккаунт
                 </button>
 
 
@@ -175,7 +175,7 @@ export default function Todos({ user }) {
                     onChange={(e) => setTitle(e.target.value)}
                     style={{ flex: 1 }}
                 />
-                <button type="submit">Добавить</button>
+                <button type="submit">Добавити</button>
             </form>
 
 
@@ -185,7 +185,7 @@ export default function Todos({ user }) {
 
                 <textarea
                     rows={4}
-                    placeholder="Опиши дела текстом: 'подготовиться к поездке, купить билеты, собрать вещи...'"
+                    placeholder="Опищіть що вам треба зробити, вони будуть розбиті на менші та перетворені в задачі...'"
                     value={aiText}
                     onChange={(e) => setAiText(e.target.value)}
                     style={{ width: "100%", resize: "vertical" }}
@@ -193,7 +193,7 @@ export default function Todos({ user }) {
 
                 <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                     <button onClick={generateFromText} disabled={aiLoading || !aiText.trim()}>
-                        {aiLoading ? "Генерирую..." : "Разбить на задачи"}
+                        {aiLoading ? "Генерую..." : "Розбити на задачі"}
                     </button>
 
                     {aiPreview?.raw_json && (
@@ -209,7 +209,7 @@ export default function Todos({ user }) {
                                 URL.revokeObjectURL(url);
                             }}
                         >
-                            Скачать JSON
+                            download JSON
                         </button>
                     )}
                 </div>

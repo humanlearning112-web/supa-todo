@@ -1,15 +1,9 @@
 ﻿
-// <reference lib="deno.ns" />
-
 /**
  * Edge Function: ai-todos
- * - Принимает { text }
- * - Вызывает Gemini
- * - Возвращает { tasks: [{title,is_done}], raw_json }
- *
- * ВАЖНО ДЛЯ БРАУЗЕРА:
- * - CORS preflight (OPTIONS) должен обрабатываться первым
- * - CORS headers должны быть во ВСЕХ ответах
+
+ * - CORS preflight (OPTIONS) 
+ * - CORS 
  * Supabase docs: https://supabase.com/docs/guides/functions/cors
  */
 
@@ -44,28 +38,27 @@ type GeminiResponse = {
 };
 
 Deno.serve(async (req) => {
-    // ✅ Логи — чтобы в Supabase Dashboard → Logs видеть OPTIONS/POST
+    // ✅ Логи 
     console.log("METHOD:", req.method, "ORIGIN:", req.headers.get("origin"));
 
-    // ✅ 1) CORS preflight должен быть самым первым
-    // Это критично, иначе браузер заблокирует запрос (OPTIONS → POST) [1](https://fallendeity.github.io/gemini-ts-cookbook/quickstarts/JSON_mode.html)[5](https://www.raymondcamden.com/2024/06/11/using-json-schema-with-google-gemini)
+    // ✅ 1) CORS preflight (https://fallendeity.github.io/gemini-ts-cookbook/quickstarts/JSON_mode.html)
+    // (https://www.raymondcamden.com/2024/06/11/using-json-schema-with-google-gemini)
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
 
-    // Разрешаем только POST
+    // only POST
     if (req.method !== "POST") {
         return jsonResponse({ error: "Use POST" }, 405);
     }
 
-    // ✅ 2) Для POST требуем Authorization (пользователь должен быть залогинен)
-    // (OPTIONS мы НЕ проверяем — иначе preflight не пройдёт)
+    // ✅ 2) Для POST треба перевірити що юзер залогінений
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
         return jsonResponse({ error: "Missing Authorization header" }, 401);
     }
 
-    // Прочитаем входной текст
+    // читає введений юзером текст
     const { text } = await req.json().catch(() => ({ text: "" }));
     const input = String(text ?? "").trim();
 
@@ -73,18 +66,18 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Empty text" }, 400);
     }
 
-    // небольшой лимит на длину запроса (экономия токенов/денег)
+    // обмеження кількості символів в тексті
     if (input.length > 4000) {
         return jsonResponse({ error: "Text too long (max 4000 chars)" }, 413);
     }
 
-    // Ключ Gemini хранится в Secrets: GEMINI_API_KEY
+    // Ключ Gemini який ми зберігаємов в  Secrets: GEMINI_API_KEY
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) {
         return jsonResponse({ error: "GEMINI_API_KEY is not set" }, 500);
     }
 
-    // Промпт: требуем строго JSON массив задач
+    // Промпт: вимагаємо суворо дотримуватися JSON
     const prompt = `
 Ты помощник по планированию.
 Разбей текст пользователя на конкретные TODO-задачи.
@@ -102,11 +95,11 @@ Deno.serve(async (req) => {
 `.trim();
 
     // Gemini endpoint generateContent (REST)
-    // Документация: https://ai.google.dev/api/generate-content [4](https://supabase.com/docs/reference/cli/supabase-functions-serve)
+    //  https://ai.google.dev/api/generate-content (https://supabase.com/docs/reference/cli/supabase-functions-serve)
     const geminiUrl =
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-    // JSON mode (response_mime_type: application/json) — чтобы получить парсимый JSON [3](https://supabase.com/docs/guides/functions/function-configuration)[4](https://supabase.com/docs/reference/cli/supabase-functions-serve)
+    // JSON mode (response_mime_type: application/json) (https://supabase.com/docs/guides/functions/function-configuration)[4](https://supabase.com/docs/reference/cli/supabase-functions-serve)
     const geminiBody = {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
@@ -120,7 +113,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            // Можно передавать ключ заголовком x-goog-api-key [4](https://supabase.com/docs/reference/cli/supabase-functions-serve)
+            // ключ заголовком x-goog-api-key [4](https://supabase.com/docs/reference/cli/supabase-functions-serve)
             "x-goog-api-key": GEMINI_API_KEY,
         },
         body: JSON.stringify(geminiBody),
@@ -143,7 +136,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Model did not return JSON array", raw_json: raw }, 422);
     }
 
-    // Нормализация + лимиты
+    // нормалізуємо + ліміти
     const normalized = tasks
         .map((t) => ({
             title: String(t?.title ?? "").trim().slice(0, 120),
