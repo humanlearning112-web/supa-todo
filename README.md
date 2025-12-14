@@ -1,13 +1,13 @@
-# Опис проєкту 
+# Project Description
 
-Про цей проєкт 
-supabase + react + google AI studio + vercle
+About this project
+supabase + react + Google AI Studio + Vercel
+Features:
 
-функції:
-login за поштою аба авторизація через GitHub
-створення ToDo затач іх позначення як виконаних та видалення
-Можливість наприсати декілька речень які автоматично розібьються на задачі( реалізована на supabase-EdgeFunction + google-AIs-tudio)
-Можливість видалити акаунт юзером (реалізовано через supabase-EdgeFunction)
+Login via email or authorization through GitHub
+Create ToDo items, mark them as completed, and delete them
+Ability to write several sentences that will automatically be split into tasks (implemented using supabase Edge Functions + Google AI Studio)
+Ability for the user to delete their account (implemented via supabase Edge Functions)
 
 # React + Vite
 
