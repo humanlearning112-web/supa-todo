@@ -2,7 +2,79 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 
+import {
+  FunctionsHttpError,
+  FunctionsRelayError,
+  FunctionsFetchError,
+} from "@supabase/supabase-js";
+
+
+
+
 export default function Todos({ user }) {
+
+
+
+
+
+
+    const [aiText, setAiText] = useState("");
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiPreview, setAiPreview] = useState(null); // optional preview of json/tasks
+
+
+    const generateFromText = async () => {
+        try {
+            setAiLoading(true);
+
+            const { data, error } = await supabase.functions.invoke("ai-todos", {
+                body: { text: aiText },
+            }); // invoke автоматически сериализует JSON и обрабатывает ответ [2](https://supabase.com/docs/reference/javascript/functions-invoke)
+
+            if (error) throw error;
+
+            const tasks = data?.tasks ?? [];
+            setAiPreview(data); // сохраним raw_json и tasks для "скачать json"
+
+            if (!tasks.length) return;
+
+            // превратим в строки для вставки
+            const rows = tasks.map((t) => ({
+                title: t.title,
+                is_done: false,
+                user_id: user.id,
+            }));
+
+            const { error: insErr } = await supabase.from("todos").insert(rows);
+            if (insErr) throw insErr;
+
+            setAiText("");
+            await loadTodos();
+        } catch (e) {
+            console.error("invoke error:", e);
+
+            if (e instanceof FunctionsHttpError) {
+                const errBody = await e.context.json().catch(() => ({}));
+                console.error("HTTP error body:", errBody);
+                alert("Edge Function вернула HTTP ошибку. Смотри console.");
+            } else if (e instanceof FunctionsRelayError) {
+                console.error("Relay error:", e.message);
+                alert("Relay error (проблема на стороне Supabase gateway). Смотри console.");
+            } else if (e instanceof FunctionsFetchError) {
+                console.error("Fetch error:", e.message);
+                alert("Fetch error: запрос не ушёл (URL/CORS/сеть/ENV). Смотри console.");
+            } else {
+                alert(e?.message ?? String(e));
+            }
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
+
+
+
+
     const [todos, setTodos] = useState([]);
     const [title, setTitle] = useState("");
 
@@ -72,6 +144,45 @@ export default function Todos({ user }) {
                 />
                 <button type="submit">Добавить</button>
             </form>
+
+
+
+            <div style={{ marginTop: 16, padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
+                <h3>AI → TODO</h3>
+
+                <textarea
+                    rows={4}
+                    placeholder="Опиши дела текстом: 'подготовиться к поездке, купить билеты, собрать вещи...'"
+                    value={aiText}
+                    onChange={(e) => setAiText(e.target.value)}
+                    style={{ width: "100%", resize: "vertical" }}
+                />
+
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    <button onClick={generateFromText} disabled={aiLoading || !aiText.trim()}>
+                        {aiLoading ? "Генерирую..." : "Разбить на задачи"}
+                    </button>
+
+                    {aiPreview?.raw_json && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const blob = new Blob([aiPreview.raw_json], { type: "application/json" });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = "ai-todos.json";
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}
+                        >
+                            Скачать JSON
+                        </button>
+                    )}
+                </div>
+            </div>
+
+
 
             <ul style={{ listStyle: "none", padding: 0, marginTop: 16 }}>
                 {todos.map((t) => (
