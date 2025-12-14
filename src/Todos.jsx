@@ -73,6 +73,29 @@ export default function Todos({ user }) {
 
 
 
+    const deleteAccount = async () => {
+        const ok = confirm("Точно удалить аккаунт? Это действие необратимо. Все ваши задачи будут удалены.");
+        if (!ok) return;
+
+        try {
+            const { data, error } = await supabase.functions.invoke("delete-account", {
+                body: {}, // ничего не нужно, user берется из JWT
+            });
+
+            if (error) throw error;
+
+            // на всякий случай
+            await supabase.auth.signOut();
+
+            alert("Аккаунт удалён.");
+            // можно обновить страницу
+            window.location.reload();
+        } catch (e) {
+            console.error(e);
+            alert(e?.message ?? String(e));
+        }
+    };
+
 
 
     const [todos, setTodos] = useState([]);
@@ -127,12 +150,22 @@ export default function Todos({ user }) {
     const signOut = async () => {
         await supabase.auth.signOut();
     };
-
+    
     return (
         <div style={{ maxWidth: 520, margin: "40px auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h2>Мой Todo</h2>
                 <button onClick={signOut}>Выйти</button>
+     
+                
+                <button // кнопка видалення акаунту
+                    onClick={deleteAccount}
+                    style={{ background: "#ff4d4f", color: "white", border: 0, padding: "6px 10px", borderRadius: 6 }}
+                >
+                    Удалить аккаунт
+                </button>
+
+
             </div>
 
             <form onSubmit={addTodo} style={{ display: "flex", gap: 8 }}>
