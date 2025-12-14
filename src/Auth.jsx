@@ -1,4 +1,4 @@
-
+п»ї
 import { useState } from "react";
 import { supabase } from "./supabaseClient";
 
@@ -7,23 +7,59 @@ export default function Auth() {
     const [password, setPassword] = useState("");
 
     const signUp = async () => {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+        });
         if (error) alert(error.message);
-        else alert("Ready! Проверь почту (если включено подтверждение).");
+        else alert("Р“РѕС‚РѕРІРѕ! РџСЂРѕРІРµСЂСЊ РїРѕС‡С‚Сѓ (РµСЃР»Рё РІРєР»СЋС‡РµРЅРѕ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ).");
     };
 
     const signIn = async () => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+        });
+        if (error) alert(error.message);
+    };
+
+    // вњ… GitHub OAuth
+    const signInWithGitHub = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: "github",
+            options: {
+                // РѕС‚РїСЂР°РІРёРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РѕР±СЂР°С‚РЅРѕ РЅР° С‚РµРєСѓС‰РёР№ origin (localhost:5173 РёР»Рё 5176)
+                redirectTo: window.location.origin,
+            },
+        });
         if (error) alert(error.message);
     };
 
     return (
         <div style={{ maxWidth: 360, margin: "40px auto", display: "grid", gap: 12 }}>
-            <h2>Вход / Регистрация</h2>
-            <input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <button onClick={signIn}>Sing IN</button>
-            <button onClick={signUp}>Зарегистрироваться</button>
+            <h2>Р’С…РѕРґ / Р РµРіРёСЃС‚СЂР°С†РёСЏ</h2>
+
+            <button onClick={signInWithGitHub}>
+                Р’РѕР№С‚Рё С‡РµСЂРµР· GitHub
+            </button>
+
+            <hr />
+
+            <input
+                type="email"
+                placeholder="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+                placeholder="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <button onClick={signIn}>Р’РѕР№С‚Рё</button>
+            <button onClick={signUp}>Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊСЃСЏ</button>
         </div>
     );
-} 
+}
